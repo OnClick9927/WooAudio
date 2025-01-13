@@ -6,6 +6,7 @@
 *********************************************************************************/
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking.Types;
 
 namespace WooAudio
 {
@@ -29,7 +30,6 @@ namespace WooAudio
             }
             player.SetVolume(volume);
             players.Add(player);
-
             return player;
         }
 

@@ -14,7 +14,10 @@ namespace WooAudio
         internal float GetVolume(int channel)
         {
             float vol = -1;
-            pairs.TryGetValue(channel, out vol);
+            if (!pairs.TryGetValue(channel, out vol))
+            {
+                vol = -1;
+            }
             return vol;
         }
 
