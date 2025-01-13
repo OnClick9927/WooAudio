@@ -40,6 +40,8 @@ namespace WooAudio
             ins.asset = asset;
             ins.recorder = recorder;
             ins.pref = recorder.Read();
+            if (ins.pref == null)
+                ins.pref = new AudioPref();
             assets = new Dictionary<string, AudioAsset>();
             channels = new Dictionary<int, AudioChannel>();
         }

@@ -20,7 +20,6 @@ namespace WooAudio
         public AudioPlayer(AudioSource source)
         {
             _source = source;
-            _source.playOnAwake = false;
         }
         private float GetTargetVolume(float percent) => volume * (1 + percent);
         public void SetVolume(float volume)
@@ -35,11 +34,12 @@ namespace WooAudio
         {
             if (!_stop)
             {
+
                 AudioClip clip = asset.GetClip();
                 _source.clip = clip;
                 _source.volume = GetTargetVolume(Audio.ins.config.GetSoundVolume(sound_id));
                 _source.loop = Audio.ins.config.GetSoundLoop(sound_id);
-                _source.Play();
+                _source.Play(0);
             }
         }
         public void Play(int sound_id)
@@ -47,6 +47,8 @@ namespace WooAudio
             _stop = false;
             this.sound_id = sound_id;
             asset = Audio.Prepare(sound_id);
+            //_loading = true;
+
             if (asset.isDone)
                 PlayAudio();
             else
@@ -72,6 +74,7 @@ namespace WooAudio
                 _loading = false;
             }
             _stop = true;
+
             _source.Stop();
             _source.clip = null;
             Audio.ReleaseAsset(asset);
