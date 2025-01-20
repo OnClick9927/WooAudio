@@ -6,7 +6,6 @@
 *********************************************************************************/
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking.Types;
 
 namespace WooAudio
 {
@@ -75,11 +74,22 @@ namespace WooAudio
             ShutDown();
         }
 
-        public void Stop(string path)
+        public void Stop(int sound_id, bool all)
         {
-            var player = players.Find(x => x.asset.path == path);
-            if (player != null)
-                ShutDown(player);
+            if (all)
+            {
+                var _players = players.FindAll(x => x.sound_id == sound_id);
+                if (_players != null)
+                    foreach (var player in _players)
+                        ShutDown(player);
+            }
+            else
+            {
+
+                var player = players.Find(x => x.sound_id == sound_id);
+                if (player != null)
+                    ShutDown(player);
+            }
         }
     }
 

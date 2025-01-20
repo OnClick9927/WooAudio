@@ -17,8 +17,9 @@ namespace WooAudio
         internal IAudioAsset asset;
         AudioPref pref;
 
-        private static Dictionary<int, AudioChannel> channels;
+        private Dictionary<int, AudioChannel> channels;
         private static Audio _ins;
+        private Dictionary<string, AudioAsset> assets;
 
         internal static Audio ins
         {
@@ -32,18 +33,18 @@ namespace WooAudio
                 return _ins;
             }
         }
-        private static Dictionary<string, AudioAsset> assets;
 
         public static void Init(IAudioPrefRecorder recorder, IAudioAsset asset)
         {
-
             ins.asset = asset;
             ins.recorder = recorder;
             ins.pref = recorder.Read();
             if (ins.pref == null)
                 ins.pref = new AudioPref();
-            assets = new Dictionary<string, AudioAsset>();
-            channels = new Dictionary<int, AudioChannel>();
+            if (ins.assets == null)
+                ins.assets = new Dictionary<string, AudioAsset>();
+            if (ins.channels == null)
+                ins.channels = new Dictionary<int, AudioChannel>();
         }
         public static void SetDefaultVolume(int channel, float vol)
         {
@@ -94,10 +95,17 @@ namespace WooAudio
             AudioChannel chan = GetChannel(ins.config.GetSoundChannel(sound_id));
             chan.Play(sound_id);
         }
-        public static void Stop(int sound_id)
+        public static void Stop(int sound_id, bool all = false)
         {
             AudioChannel chan = GetChannel(ins.config.GetSoundChannel(sound_id));
-            chan.Stop(ins.config.GetSoundPath(sound_id));
+            chan.Stop(sound_id, all);
+        }
+        public static void ShutDownAll()
+        {
+            foreach (var item in ins.channels.Values)
+            {
+                item.ShutDown();
+            }
         }
 
         public static void ShutDown(int channel)
@@ -110,10 +118,10 @@ namespace WooAudio
         private static AudioChannel GetChannel(int channel)
         {
             AudioChannel chan;
-            if (!channels.TryGetValue(channel, out chan))
+            if (!ins.channels.TryGetValue(channel, out chan))
             {
                 chan = new AudioChannel(channel);
-                channels.Add(channel, chan);
+                ins.channels.Add(channel, chan);
             }
             return chan;
         }
@@ -123,7 +131,7 @@ namespace WooAudio
             while (release.Count > 0)
             {
                 var item = release.Dequeue();
-                assets.Remove(item.path);
+                ins.assets.Remove(item.path);
                 item.ReleaseAsset();
             }
         }
@@ -132,10 +140,10 @@ namespace WooAudio
         {
             string path = ins.config.GetSoundPath(sound_id);
             AudioAsset asset;
-            if (!assets.TryGetValue(path, out asset))
+            if (!ins.assets.TryGetValue(path, out asset))
             {
                 asset = new AudioAsset(path, ins.config.GetSoundExistTime(sound_id));
-                assets.Add(path, asset);
+                ins.assets.Add(path, asset);
             }
             asset.Retain();
             return asset;

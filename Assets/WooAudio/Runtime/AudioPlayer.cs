@@ -14,7 +14,7 @@ namespace WooAudio
         private float volume = 0f;
         private bool _stop;
         private bool _loading;
-        private int sound_id;
+        public int sound_id { get; private set; }
         public bool IsWork => _source.isPlaying || _loading;
         public AudioAsset asset { get; private set; }
         public AudioPlayer(AudioSource source)
