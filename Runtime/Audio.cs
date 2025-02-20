@@ -4,6 +4,7 @@
  *UnityVersion:   2021.3.33f1c1
  *Date:           2024-08-13
 *********************************************************************************/
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -80,6 +81,11 @@ namespace WooAudio
                 AddToRelease(item);
             RleaseAssets();
         }
+        public static void SetVolume(Enum channel, float volume)
+        {
+            SetVolume(Convert.ToInt32(channel), volume);
+        }
+        public static float GetVolume(Enum channel) => GetVolume(Convert.ToInt32(channel));
 
         public static void SetVolume(int channel, float volume)
         {
