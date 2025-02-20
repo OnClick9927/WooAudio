@@ -75,7 +75,7 @@ namespace WooAudio
         {
 
             foreach (var channel in channels.Values)
-                channel.Release();
+                channel.StopChannel();
             foreach (var item in assets.Values)
                 AddToRelease(item);
             RleaseAssets();
@@ -100,18 +100,18 @@ namespace WooAudio
             AudioChannel chan = GetChannel(ins.config.GetSoundChannel(sound_id));
             chan.Stop(sound_id, all);
         }
-        public static void ShutDownAll()
+        public static void StopAllChannel()
         {
             foreach (var item in ins.channels.Values)
             {
-                item.ShutDown();
+                item.StopChannel();
             }
         }
 
-        public static void ShutDown(int channel)
+        public static void StopChannel(int channel)
         {
             AudioChannel chan = GetChannel(channel);
-            chan.ShutDown();
+            chan.StopChannel();
         }
 
 
@@ -121,6 +121,7 @@ namespace WooAudio
             if (!ins.channels.TryGetValue(channel, out chan))
             {
                 chan = new AudioChannel(channel);
+                chan.SetVolume(GetVolume(channel));
                 ins.channels.Add(channel, chan);
             }
             return chan;

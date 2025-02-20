@@ -12,43 +12,35 @@ namespace WooAudio
     {
         private AudioSource _source;
         private float volume = 0f;
-        private bool _stop;
         private bool _loading;
         public int sound_id { get; private set; }
-        public bool IsWork => _source.isPlaying || _loading;
+
+        public bool lifeEnd { get; private set; }
+
         public AudioAsset asset { get; private set; }
-        public AudioPlayer(AudioSource source)
-        {
-            _source = source;
-        }
+        public AudioPlayer(AudioSource source) => _source = source;
         private float GetTargetVolume(float percent) => volume * (1 + percent);
         public void SetVolume(float volume)
         {
             this.volume = volume;
-            if (_source.isPlaying && sound_id != 0)
+            if (!lifeEnd)
                 _source.volume = GetTargetVolume(Audio.ins.config.GetSoundVolume(sound_id));
         }
 
 
         private void PlayAudio()
         {
-            if (!_stop)
-            {
-
-                AudioClip clip = asset.GetClip();
-                _source.clip = clip;
-                _source.volume = GetTargetVolume(Audio.ins.config.GetSoundVolume(sound_id));
-                _source.loop = Audio.ins.config.GetSoundLoop(sound_id);
-                _source.Play(0);
-            }
+            if (lifeEnd) return;
+            AudioClip clip = asset.GetClip();
+            _source.clip = clip;
+            _source.volume = GetTargetVolume(Audio.ins.config.GetSoundVolume(sound_id));
+            _source.loop = Audio.ins.config.GetSoundLoop(sound_id);
+            _source.Play(0);
         }
         public void Play(int sound_id)
         {
-            _stop = false;
             this.sound_id = sound_id;
             asset = Audio.Prepare(sound_id);
-            //_loading = true;
-
             if (asset.isDone)
                 PlayAudio();
             else
@@ -56,32 +48,50 @@ namespace WooAudio
         }
         public void Update()
         {
+            if (lifeEnd) return;
             if (_loading)
             {
-                if (!asset.isDone || _stop) return;
+                if (!asset.isDone) return;
                 if (asset.isDone)
                 {
                     _loading = false;
                     PlayAudio();
                 }
             }
-        }
-        public void Stop()
-        {
-            if (_stop) return;
-            if (_loading)
+            else
             {
-                _loading = false;
+                if (Application.runInBackground)
+                {
+                    if (!_source.isPlaying)
+                        EndLife();
+                }
+                else
+                {
+                    if (!_source.isPlaying && Application.isFocused)
+                        EndLife();
+                }
             }
-            _stop = true;
+        }
 
+        public void EndLife()
+        {
+            if (lifeEnd)
+                return;
+
+            lifeEnd = true;
+            _loading = false;
             _source.Stop();
             _source.clip = null;
             Audio.ReleaseAsset(asset);
             asset = null;
+            this.sound_id = 0;
         }
 
-
+        public void BeginLife()
+        {
+            _loading = false;
+            lifeEnd = false;
+        }
     }
 
 }
