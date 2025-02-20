@@ -27,6 +27,7 @@ namespace WooAudio
                 source.transform.SetParent(Audio.ins.transform);
                 player = new AudioPlayer(source);
             }
+            player.BeginLife();
             player.SetVolume(volume);
             players.Add(player);
             return player;
@@ -39,7 +40,7 @@ namespace WooAudio
         public void Play(int sound_id)
         {
             if (Audio.ins.config.GetSoundCover(sound_id))
-                ShutDown();
+                StopChannel();
             Get().Play(sound_id);
         }
 
@@ -49,9 +50,9 @@ namespace WooAudio
             for (int i = 0; i < players.Count; i++)
                 players[i].SetVolume(volume);
         }
-        private void ShutDown(AudioPlayer player)
+        private void BackToPool(AudioPlayer player)
         {
-            player.Stop();
+            //player.Stop();
             players.Remove(player);
             sleeps.Enqueue(player);
         }
@@ -60,20 +61,16 @@ namespace WooAudio
             for (int i = players.Count - 1; i >= 0; i--)
             {
                 players[i].Update();
-                if (!players[i].IsWork)
-                    ShutDown(players[i]);
+                if (players[i].lifeEnd)
+                    BackToPool(players[i]);
             }
         }
-        public void ShutDown()
+        public void StopChannel()
         {
             for (int i = players.Count - 1; i >= 0; i--)
-                ShutDown(players[i]);
+                players[i].EndLife();
         }
-        public void Release()
-        {
-            ShutDown();
-        }
-
+ 
         public void Stop(int sound_id, bool all)
         {
             if (all)
@@ -81,14 +78,17 @@ namespace WooAudio
                 var _players = players.FindAll(x => x.sound_id == sound_id);
                 if (_players != null)
                     foreach (var player in _players)
-                        ShutDown(player);
+                        player.EndLife();
+                        //ShutDown(player);
             }
             else
             {
 
                 var player = players.Find(x => x.sound_id == sound_id);
                 if (player != null)
-                    ShutDown(player);
+                    player.EndLife();
+
+                //ShutDown(player);
             }
         }
     }
