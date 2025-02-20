@@ -23,7 +23,7 @@ namespace WooAudio
         public void SetVolume(float volume)
         {
             this.volume = volume;
-            if (!lifeEnd)
+            if (!lifeEnd && sound_id != 0)
                 _source.volume = GetTargetVolume(Audio.ins.config.GetSoundVolume(sound_id));
         }
 
